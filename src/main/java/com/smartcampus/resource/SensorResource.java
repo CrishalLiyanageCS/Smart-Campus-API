@@ -1,5 +1,7 @@
 package com.smartcampus.resource;
 
+import com.smartcampus.exception.LinkedResourceNotFoundException;
+import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.model.Room;
 import com.smartcampus.model.Sensor;
 import com.smartcampus.repository.DataStore;
@@ -23,6 +25,9 @@ import java.util.stream.Collectors;
  *   POST   /api/v1/sensors              — Register a new sensor (must link to existing room)
  *   PUT    /api/v1/sensors/{sensorId}   — Update an existing sensor
  *   DELETE /api/v1/sensors/{sensorId}   — Remove a sensor and unlink from its room
+ *
+ * Sub-resource:
+ *   /api/v1/sensors/{sensorId}/readings — Delegated to SensorReadingResource
  */
 @Path("/sensors")
 @Produces(MediaType.APPLICATION_JSON)
@@ -65,13 +70,8 @@ public class SensorResource {
     public Response getSensorById(@PathParam("sensorId") String sensorId) {
         Sensor sensor = DataStore.getSensor(sensorId);
         if (sensor == null) {
-            // Sensor not found — return 404
-            // (will be replaced with ResourceNotFoundException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "NOT_FOUND");
-            error.put("message", "Sensor with ID '" + sensorId + "' was not found.");
-            error.put("status", 404);
-            return Response.status(Response.Status.NOT_FOUND).entity(error).build();
+            throw new ResourceNotFoundException(
+                    "Sensor with ID '" + sensorId + "' was not found.");
         }
         return Response.ok(sensor).build();
     }
@@ -110,14 +110,9 @@ public class SensorResource {
         // --- Cross-link validation: room must exist ---
         Room room = DataStore.getRoom(sensor.getRoomId());
         if (room == null) {
-            // Linked room doesn't exist — return 422 Unprocessable Entity
-            // (will be replaced with LinkedResourceNotFoundException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "UNPROCESSABLE_ENTITY");
-            error.put("message", "Cannot register sensor: Room with ID '"
-                    + sensor.getRoomId() + "' does not exist.");
-            error.put("status", 422);
-            return Response.status(422).entity(error).build();
+            throw new LinkedResourceNotFoundException(
+                    "Cannot register sensor: Room with ID '"
+                            + sensor.getRoomId() + "' does not exist.");
         }
 
         // Generate an ID if the client didn't supply one
@@ -157,13 +152,8 @@ public class SensorResource {
     public Response updateSensor(@PathParam("sensorId") String sensorId, Sensor updatedSensor) {
         Sensor existingSensor = DataStore.getSensor(sensorId);
         if (existingSensor == null) {
-            // Sensor not found — return 404
-            // (will be replaced with ResourceNotFoundException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "NOT_FOUND");
-            error.put("message", "Sensor with ID '" + sensorId + "' was not found.");
-            error.put("status", 404);
-            return Response.status(Response.Status.NOT_FOUND).entity(error).build();
+            throw new ResourceNotFoundException(
+                    "Sensor with ID '" + sensorId + "' was not found.");
         }
 
         // If roomId is being changed, validate and update cross-links
@@ -172,14 +162,9 @@ public class SensorResource {
 
             Room newRoom = DataStore.getRoom(updatedSensor.getRoomId());
             if (newRoom == null) {
-                // New linked room doesn't exist — return 422
-                // (will be replaced with LinkedResourceNotFoundException on Day 4)
-                Map<String, Object> error = new LinkedHashMap<>();
-                error.put("error", "UNPROCESSABLE_ENTITY");
-                error.put("message", "Cannot move sensor: Room with ID '"
-                        + updatedSensor.getRoomId() + "' does not exist.");
-                error.put("status", 422);
-                return Response.status(422).entity(error).build();
+                throw new LinkedResourceNotFoundException(
+                        "Cannot move sensor: Room with ID '"
+                                + updatedSensor.getRoomId() + "' does not exist.");
             }
 
             // Remove sensor ID from old room's list
@@ -222,13 +207,8 @@ public class SensorResource {
     public Response deleteSensor(@PathParam("sensorId") String sensorId) {
         Sensor sensor = DataStore.getSensor(sensorId);
         if (sensor == null) {
-            // Sensor not found — return 404
-            // (will be replaced with ResourceNotFoundException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "NOT_FOUND");
-            error.put("message", "Sensor with ID '" + sensorId + "' was not found.");
-            error.put("status", 404);
-            return Response.status(Response.Status.NOT_FOUND).entity(error).build();
+            throw new ResourceNotFoundException(
+                    "Sensor with ID '" + sensorId + "' was not found.");
         }
 
         // Cross-link: remove sensor ID from the parent room's sensorIds list
@@ -244,5 +224,24 @@ public class SensorResource {
         DataStore.getSensorReadings().remove(sensorId);
 
         return Response.noContent().build();
+    }
+
+    // ==================== Sub-Resource Locator for Readings ====================
+
+    /**
+     * Sub-resource locator method that delegates all requests matching
+     * /sensors/{sensorId}/readings to the SensorReadingResource class.
+     *
+     * This follows the JAX-RS sub-resource locator pattern:
+     * - The method is annotated with @Path but has NO HTTP method annotation
+     * - It returns an instance of the sub-resource class
+     * - Jersey will then match HTTP methods on the returned sub-resource
+     *
+     * @param sensorId the ID of the parent sensor
+     * @return a new SensorReadingResource instance scoped to this sensor
+     */
+    @Path("/{sensorId}/readings")
+    public SensorReadingResource getReadingsSubResource(@PathParam("sensorId") String sensorId) {
+        return new SensorReadingResource(sensorId);
     }
 }

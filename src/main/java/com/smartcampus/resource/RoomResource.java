@@ -1,5 +1,7 @@
 package com.smartcampus.resource;
 
+import com.smartcampus.exception.ResourceNotFoundException;
+import com.smartcampus.exception.RoomNotEmptyException;
 import com.smartcampus.model.Room;
 import com.smartcampus.repository.DataStore;
 
@@ -51,13 +53,8 @@ public class RoomResource {
     public Response getRoomById(@PathParam("roomId") String roomId) {
         Room room = DataStore.getRoom(roomId);
         if (room == null) {
-            // Room not found — return 404 with error JSON
-            // (will be replaced with ResourceNotFoundException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "NOT_FOUND");
-            error.put("message", "Room with ID '" + roomId + "' was not found.");
-            error.put("status", 404);
-            return Response.status(Response.Status.NOT_FOUND).entity(error).build();
+            throw new ResourceNotFoundException(
+                    "Room with ID '" + roomId + "' was not found.");
         }
         return Response.ok(room).build();
     }
@@ -123,13 +120,8 @@ public class RoomResource {
     public Response updateRoom(@PathParam("roomId") String roomId, Room updatedRoom) {
         Room existingRoom = DataStore.getRoom(roomId);
         if (existingRoom == null) {
-            // Room not found — return 404
-            // (will be replaced with ResourceNotFoundException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "NOT_FOUND");
-            error.put("message", "Room with ID '" + roomId + "' was not found.");
-            error.put("status", 404);
-            return Response.status(Response.Status.NOT_FOUND).entity(error).build();
+            throw new ResourceNotFoundException(
+                    "Room with ID '" + roomId + "' was not found.");
         }
 
         // Update fields if provided
@@ -161,25 +153,15 @@ public class RoomResource {
     public Response deleteRoom(@PathParam("roomId") String roomId) {
         Room room = DataStore.getRoom(roomId);
         if (room == null) {
-            // Room not found — return 404
-            // (will be replaced with ResourceNotFoundException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "NOT_FOUND");
-            error.put("message", "Room with ID '" + roomId + "' was not found.");
-            error.put("status", 404);
-            return Response.status(Response.Status.NOT_FOUND).entity(error).build();
+            throw new ResourceNotFoundException(
+                    "Room with ID '" + roomId + "' was not found.");
         }
 
         // Business rule: block deletion if room has assigned sensors
         if (room.getSensorIds() != null && !room.getSensorIds().isEmpty()) {
-            // Return 409 Conflict — room is not empty
-            // (will be replaced with RoomNotEmptyException on Day 4)
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("error", "CONFLICT");
-            error.put("message", "Room " + roomId + " cannot be deleted: "
-                    + room.getSensorIds().size() + " active sensor(s) assigned.");
-            error.put("status", 409);
-            return Response.status(Response.Status.CONFLICT).entity(error).build();
+            throw new RoomNotEmptyException(
+                    "Room " + roomId + " cannot be deleted: "
+                            + room.getSensorIds().size() + " active sensor(s) assigned.");
         }
 
         // Safe to delete — no sensors linked
