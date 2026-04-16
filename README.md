@@ -30,6 +30,43 @@ The API follows a **layered architecture** with clear separation of concerns:
 - **Sub-resource pattern**: Sensor readings are modelled as a sub-resource of sensors (`/sensors/{id}/readings`), reflecting the natural parent-child ownership relationship.
 - **Consistent error format**: All error responses across the API follow an identical JSON structure with `error`, `message`, and `status` fields.
 
+### Project Structure
+
+```
+SmartCampusAPI/
+├── pom.xml                                           # Maven config — Jersey + Tomcat dependencies
+├── README.md                                         # This file — API overview, build instructions, report
+└── src/main/
+    ├── java/com/smartcampus/
+    │   ├── SmartCampusApplication.java               # JAX-RS app config (@ApplicationPath("/api/v1"))
+    │   ├── model/
+    │   │   ├── Room.java                             # Room POJO (id, name, capacity, sensorIds)
+    │   │   ├── Sensor.java                           # Sensor POJO (id, type, status, currentValue, roomId)
+    │   │   └── SensorReading.java                    # Reading POJO (id, timestamp, value)
+    │   ├── repository/
+    │   │   └── DataStore.java                        # In-memory ConcurrentHashMap store (no database)
+    │   ├── resource/
+    │   │   ├── DiscoveryResource.java                # GET /api/v1 — HATEOAS entry point
+    │   │   ├── RoomResource.java                     # CRUD for /api/v1/rooms
+    │   │   ├── SensorResource.java                   # CRUD for /api/v1/sensors + sub-resource locator
+    │   │   └── SensorReadingResource.java            # Sub-resource for /api/v1/sensors/{id}/readings
+    │   ├── exception/
+    │   │   ├── ResourceNotFoundException.java        # Thrown on missing room/sensor → 404
+    │   │   ├── RoomNotEmptyException.java            # Thrown on DELETE room with sensors → 409
+    │   │   ├── LinkedResourceNotFoundException.java  # Thrown on invalid roomId reference → 422
+    │   │   └── SensorUnavailableException.java       # Thrown on reading to MAINTENANCE sensor → 403
+    │   ├── exception/mapper/
+    │   │   ├── ResourceNotFoundExceptionMapper.java  # @Provider → HTTP 404
+    │   │   ├── RoomNotEmptyExceptionMapper.java      # @Provider → HTTP 409
+    │   │   ├── LinkedResourceNotFoundExceptionMapper.java  # @Provider → HTTP 422
+    │   │   ├── SensorUnavailableExceptionMapper.java # @Provider → HTTP 403
+    │   │   └── GenericExceptionMapper.java           # @Provider → HTTP 500 catch-all (no stack trace)
+    │   └── filter/
+    │       └── LoggingFilter.java                    # @Provider — logs every request + response
+    └── webapp/WEB-INF/
+        └── web.xml                                   # Jersey servlet config — maps /api/v1/*
+```
+
 ### Pre-loaded Sample Data
 
 The `DataStore` is pre-populated with sample data for immediate testing:
@@ -56,7 +93,44 @@ The `DataStore` is pre-populated with sample data for immediate testing:
 | Apache Maven | 3.6+ | Build automation and dependency management |
 | Apache Tomcat | 7+ (or use embedded plugin) | Servlet container for deploying the WAR |
 
-### Option A — Run with Embedded Tomcat (Recommended for Development)
+### Option A — Run with NetBeans (Required for Markers)
+
+> **Note**: The module lecturer has confirmed that markers will use **NetBeans only**. Please follow this option to open and run the project.
+
+**Prerequisites:**
+- NetBeans IDE 12 or higher (with Maven support built in)
+- Apache Tomcat 9 or 10 registered in NetBeans
+- JDK 11 or higher
+
+**Steps:**
+
+1. **Clone the repository**
+   ```
+   git clone https://github.com/CrishalLiyanageCS/Smart-Campus-API.git
+   ```
+
+2. **Open the project in NetBeans**
+   - Launch NetBeans
+   - Go to **File → Open Project**
+   - Navigate to the cloned `Smart-Campus-API` folder
+   - NetBeans will recognise it automatically as a Maven project — click **Open Project**
+
+3. **Register Apache Tomcat (first time only)**
+   - Go to **Tools → Servers → Add Server**
+   - Select **Apache Tomcat** and provide the path to your Tomcat installation
+   - Click **Finish**
+
+4. **Run the project**
+   - Right-click the project in the Projects panel
+   - Select **Run** (or press **F6**)
+   - NetBeans will build the WAR and deploy it to Tomcat automatically
+
+5. **Verify the server is running**
+   - Open a browser or Postman
+   - Navigate to: `http://localhost:8080/SmartCampusAPI/api/v1`
+   - You should see the Discovery endpoint JSON response
+
+### Option B — Run with Embedded Tomcat (Command Line)
 
 ```bash
 # 1. Clone the repository
@@ -69,7 +143,7 @@ mvn clean compile tomcat7:run
 
 The API will start at: **`http://localhost:8080/api/v1`**
 
-### Option B — Deploy to External Tomcat
+### Option C — Deploy to External Tomcat
 
 ```bash
 # 1. Build the WAR file
@@ -406,3 +480,7 @@ The filter-based approach provides the following benefits over manual logging in
 4. **Zero modification to existing code**: Adding the filter required **no changes** to any existing resource class. The filter was added as a new class, annotated with `@Provider`, and Jersey automatically discovered and registered it through package scanning. This demonstrates the **Open/Closed Principle** — the system is open for extension (adding new filters) but closed for modification (existing resource classes remain untouched).
 
 5. **Performance monitoring capability**: By logging both the request entry and response exit, the filter creates natural bookends that can be extended to measure **response times** by recording timestamps. This would be impractical to implement consistently with manual logging scattered across dozens of methods.
+
+---
+
+
