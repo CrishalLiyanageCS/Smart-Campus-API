@@ -3,6 +3,7 @@ package com.smartcampus.resource;
 import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.exception.SensorUnavailableException;
 import com.smartcampus.model.Sensor;
+import com.smartcampus.model.SensorStatus;
 import com.smartcampus.model.SensorReading;
 import com.smartcampus.repository.DataStore;
 
@@ -87,7 +88,7 @@ public class SensorReadingResource {
         }
 
         // Business rule: block readings for sensors under maintenance
-        if ("MAINTENANCE".equalsIgnoreCase(sensor.getStatus())) {
+        if (SensorStatus.MAINTENANCE == sensor.getStatus()) {
             throw new SensorUnavailableException(
                     "Sensor '" + sensorId + "' is currently under MAINTENANCE and cannot accept readings.");
         }

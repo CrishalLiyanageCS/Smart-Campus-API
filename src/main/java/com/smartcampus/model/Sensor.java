@@ -9,7 +9,7 @@ public class Sensor {
 
     private String id;              // Unique identifier, e.g., "TEMP-001"
     private String type;            // Category, e.g., "Temperature", "Occupancy", "CO2"
-    private String status;          // Current state: "ACTIVE", "MAINTENANCE", or "OFFLINE"
+    private SensorStatus status;    // Current state
     private double currentValue;    // The most recent measurement recorded
     private String roomId;          // Foreign key linking to the Room where the sensor is located
 
@@ -21,7 +21,7 @@ public class Sensor {
     public Sensor(String id, String type, String status, double currentValue, String roomId) {
         this.id = id;
         this.type = type;
-        this.status = status;
+        this.status = status != null ? SensorStatus.valueOf(status) : null;
         this.currentValue = currentValue;
         this.roomId = roomId;
     }
@@ -43,11 +43,11 @@ public class Sensor {
         this.type = type;
     }
 
-    public String getStatus() {
+    public SensorStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(SensorStatus status) {
         this.status = status;
     }
 

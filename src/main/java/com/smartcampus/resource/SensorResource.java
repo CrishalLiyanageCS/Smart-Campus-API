@@ -4,6 +4,7 @@ import com.smartcampus.exception.LinkedResourceNotFoundException;
 import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.model.Room;
 import com.smartcampus.model.Sensor;
+import com.smartcampus.model.SensorStatus;
 import com.smartcampus.repository.DataStore;
 
 import javax.ws.rs.*;
@@ -121,8 +122,8 @@ public class SensorResource {
         }
 
         // Set default status if not provided
-        if (sensor.getStatus() == null || sensor.getStatus().trim().isEmpty()) {
-            sensor.setStatus("ACTIVE");
+        if (sensor.getStatus() == null) {
+            sensor.setStatus(SensorStatus.ACTIVE);
         }
 
         // Persist the new sensor
@@ -183,7 +184,7 @@ public class SensorResource {
         if (updatedSensor.getType() != null && !updatedSensor.getType().trim().isEmpty()) {
             existingSensor.setType(updatedSensor.getType());
         }
-        if (updatedSensor.getStatus() != null && !updatedSensor.getStatus().trim().isEmpty()) {
+        if (updatedSensor.getStatus() != null) {
             existingSensor.setStatus(updatedSensor.getStatus());
         }
         // currentValue can be 0.0, so always update if PUT body includes it
