@@ -42,7 +42,8 @@ SmartCampusAPI/
     │   ├── model/
     │   │   ├── Room.java                             # Room POJO (id, name, capacity, sensorIds)
     │   │   ├── Sensor.java                           # Sensor POJO (id, type, status, currentValue, roomId)
-    │   │   └── SensorReading.java                    # Reading POJO (id, timestamp, value)
+    │   │   ├── SensorReading.java                    # Reading POJO (id, timestamp, value)
+    │   │   └── SensorStatus.java                     # Enum — ACTIVE, MAINTENANCE, OFFLINE
     │   ├── repository/
     │   │   └── DataStore.java                        # In-memory ConcurrentHashMap store (no database)
     │   ├── resource/
@@ -407,6 +408,17 @@ Both annotations bind the values of the annotation of the HTTP request URI to pa
 **`@QueryParam`** reads values out of the query string (the query string is followed by a question mark). `@QueryParam` changes the way the resource is represented. To illustrate, in `GET /api/v1/sensors?type=CO2`, the query parameter `type` is not a particular sensor; it is a filtering of the collection. Parameters to queries are optional, meaning that when the `type` is not specified, the endpoint comes back with all the sensors, raw. They simulate refinements, like filtering, sorting, pagination or choosing particular fields.
 
 In our implementation, `SensorResource.getAllSensors(@QueryParam("type") String type)` uses `@QueryParam` because the `type` parameter is optional and acts as a filter on the full sensor collection. The filtering is implemented using Java streams with `.equalsIgnoreCase()` for case-insensitive matching, so `?type=co2`, `?type=CO2`, and `?type=Co2` all return the same results.
+
+By contrast, an alternative design such as `/api/v1/sensors/type/CO2` 
+would embed the filter value directly into the URL path. This approach 
+is semantically incorrect because CO2 is not a resource — it is a search 
+criterion applied to a collection. Embedding it in the path treats it as 
+a resource identifier, which violates REST principles. It also pollutes 
+the URI namespace, risks conflicting with actual sensor IDs, and makes it 
+impossible to combine multiple filters (e.g., filtering by both type and 
+status simultaneously) without creating an explosion of nested path 
+combinations. Query parameters are the correct mechanism for optional, 
+non-identifying, combinable filters on collections.
 
 ---
 
