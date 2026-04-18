@@ -1,5 +1,6 @@
 package com.smartcampus.exception.mapper;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
 
 /**
  * Generic catch-all exception mapper for any unhandled exceptions.
- * 
+ *
  * Maps all uncaught Throwables to a 500 Internal Server Error response.
  * IMPORTANT: Never exposes stack traces or internal details to the client
  * for security reasons. The full exception is logged server-side only.
@@ -30,10 +31,14 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
-        // Log the full exception server-side for debugging
+        // Let Jersey handle its own routing exceptions (404, 405 etc.) normally
+        if (exception instanceof WebApplicationException) {
+            return ((WebApplicationException) exception).getResponse();
+        }
+
+        // Log unexpected errors server-side only — never expose to client
         LOGGER.log(Level.SEVERE, "Unhandled exception caught: " + exception.getMessage(), exception);
 
-        // Return a safe, generic error message to the client (no stack traces!)
         Map<String, Object> error = new LinkedHashMap<>();
         error.put("error", "INTERNAL_SERVER_ERROR");
         error.put("message", "An unexpected error occurred. Please try again later.");

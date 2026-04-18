@@ -94,9 +94,9 @@ The `DataStore` is pre-populated with sample data for immediate testing:
 | Apache Maven | 3.6+ | Build automation and dependency management |
 | Apache Tomcat | 7+ (or use embedded plugin) | Servlet container for deploying the WAR |
 
-### Option A — Run with NetBeans (Required for Markers)
+### Option A — Run with NetBeans
 
-> **Note**: The module lecturer has confirmed that markers will use **NetBeans only**. Please follow this option to open and run the project.
+
 
 **Prerequisites:**
 - NetBeans IDE 12 or higher (with Maven support built in)

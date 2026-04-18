@@ -7,7 +7,6 @@
 
     <display-name>Smart Campus API</display-name>
 
-    <!-- Jersey Servlet Configuration -->
     <servlet>
         <servlet-name>SmartCampusServlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -23,4 +22,4 @@
         <url-pattern>/api/v1/*</url-pattern>
     </servlet-mapping>
 
-</web-app>
+</web-app>  
