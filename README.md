@@ -2,7 +2,7 @@
 
 **Module**: 5COSC022W — Client-Server Architectures  
 **Student**: Crishal Liyanage  
-**Student ID**: w2121314git
+**Student ID**: w2121314  
 **Technology Stack**: JAX-RS (Jersey 2.41) · Maven · Apache Tomcat  
 **Constraints**: No Spring Boot · No Database — In-memory data structures only
 
