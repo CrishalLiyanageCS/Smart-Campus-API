@@ -68,7 +68,7 @@ public class SensorReadingResource {
      *
      * Business rules:
      *   - The parent sensor must exist (404 if not)
-     *   - The parent sensor must NOT be in MAINTENANCE status (403 if it is)
+     *   - The parent sensor must NOT be in MAINTENANCE or OFFLINE status (403 if it is)
      *   - A UUID is auto-generated for the reading ID
      *   - The timestamp is set to the current epoch time in milliseconds
      *   - The parent sensor's currentValue is updated with this reading's value
@@ -87,10 +87,12 @@ public class SensorReadingResource {
                     "Sensor with ID '" + sensorId + "' was not found.");
         }
 
-        // Business rule: block readings for sensors under maintenance
-        if (SensorStatus.MAINTENANCE == sensor.getStatus()) {
+        // Business rule: block readings for sensors under maintenance or offline
+        if (SensorStatus.MAINTENANCE == sensor.getStatus()
+                || SensorStatus.OFFLINE == sensor.getStatus()) {
             throw new SensorUnavailableException(
-                    "Sensor '" + sensorId + "' is currently under MAINTENANCE and cannot accept readings.");
+                    "Sensor '" + sensorId + "' is currently " + sensor.getStatus()
+                            + " and cannot accept readings.");
         }
 
         // Auto-generate a UUID for the reading ID
