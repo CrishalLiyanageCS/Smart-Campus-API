@@ -67,18 +67,20 @@ The `DataStore` is pre-populated with sample data for immediate testing:
 
 2. **Configure Run settings**
    - Right-click the project → **Properties → Run**
-   - Confirm the following settings:
+   - Confirm the following settings match the screenshot below:
      - **Server**: Apache Tomcat or TomEE
      - **Java EE Version**: Jakarta EE 8 Web
-     - **Context Path**: *(leave blank)*
+     - **Context Path**: `/SmartCampusAPI`
      - **Relative URL**: `/api/v1`
+
+   > *Project Properties → Run: Context Path `/SmartCampusAPI`, Relative URL `/api/v1`*
 
 3. **Run the project**
    - Right-click the project → **Run** (or press **F6**)
    - NetBeans builds the WAR and deploys to Tomcat automatically
 
 4. **Verify**
-   - Navigate to: `http://localhost:8080/api/v1`
+   - Navigate to: `http://localhost:8080/SmartCampusAPI/api/v1`
    - You should see the Discovery endpoint JSON response
 
 ---
@@ -89,7 +91,7 @@ The `DataStore` is pre-populated with sample data for immediate testing:
 mvn clean compile tomcat7:run
 ```
 
-The API will start at: **`http://localhost:8080/api/v1`**
+The API will start at: **`http://localhost:8080/SmartCampusAPI/api/v1`**
 
 ---
 
@@ -100,14 +102,14 @@ The API will start at: **`http://localhost:8080/api/v1`**
 mvn clean package
 
 # 2. Copy the WAR to Tomcat webapps folder
-cp target/smartcampus.war /path/to/tomcat/webapps/ROOT.war
+cp target/smartcampus.war /path/to/tomcat/webapps/
 
 # 3. Start Tomcat
 /path/to/tomcat/bin/startup.sh    # Linux/Mac
 /path/to/tomcat/bin/startup.bat   # Windows
 ```
 
-The API will be available at: **`http://localhost:8080/api/v1`**
+The API will be available at: **`http://localhost:8080/smartcampus/api/v1`**
 
 ---
 
@@ -135,7 +137,7 @@ The API will be available at: **`http://localhost:8080/api/v1`**
 
 ### 4.1 Discovery — Explore the API Entry Point
 ```bash
-curl -X GET http://localhost:8080/api/v1 \
+curl -X GET http://localhost:8080/SmartCampusAPI/api/v1 \
   -H "Accept: application/json"
 ```
 Expected response (200 OK):
@@ -157,7 +159,7 @@ Expected response (200 OK):
 
 ### 4.2 Create a New Room
 ```bash
-curl -X POST http://localhost:8080/api/v1/rooms \
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/rooms \
   -H "Content-Type: application/json" \
   -d '{"name": "Computer Lab 4", "capacity": 35}'
 ```
@@ -173,7 +175,7 @@ Expected response (201 Created):
 
 ### 4.3 Get Sensors Filtered by Type
 ```bash
-curl -X GET "http://localhost:8080/api/v1/sensors?type=Temperature" \
+curl -X GET "http://localhost:8080/SmartCampusAPI/api/v1/sensors?type=Temperature" \
   -H "Accept: application/json"
 ```
 Expected response (200 OK):
@@ -198,7 +200,7 @@ Expected response (200 OK):
 
 ### 4.4 Add a Sensor Reading (Sub-Resource POST)
 ```bash
-curl -X POST http://localhost:8080/api/v1/sensors/TEMP-001/readings \
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors/TEMP-001/readings \
   -H "Content-Type: application/json" \
   -d '{"value": 24.5}'
 ```
@@ -213,7 +215,7 @@ Expected response (201 Created) — UUID and timestamp auto-generated, parent se
 
 ### 4.5 Attempt to Delete a Room with Active Sensors (409 Conflict)
 ```bash
-curl -X DELETE http://localhost:8080/api/v1/rooms/LIB-301 -v
+curl -X DELETE http://localhost:8080/SmartCampusAPI/api/v1/rooms/LIB-301 -v
 ```
 Expected response (409 Conflict):
 ```json
@@ -226,7 +228,7 @@ Expected response (409 Conflict):
 
 ### 4.6 Post Reading to a Sensor in MAINTENANCE (403 Forbidden)
 ```bash
-curl -X POST http://localhost:8080/api/v1/sensors/TEMP-002/readings \
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors/TEMP-002/readings \
   -H "Content-Type: application/json" \
   -d '{"value": 19.0}'
 ```
@@ -241,7 +243,7 @@ Expected response (403 Forbidden):
 
 ### 4.7 Retrieve a Non-Existent Resource (404 Not Found)
 ```bash
-curl -X GET http://localhost:8080/api/v1/rooms/INVALID-ID
+curl -X GET http://localhost:8080/SmartCampusAPI/api/v1/rooms/INVALID-ID
 ```
 Expected response (404 Not Found):
 ```json
