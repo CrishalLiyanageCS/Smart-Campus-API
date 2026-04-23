@@ -16,6 +16,7 @@ public class SmartCampusApplication extends Application {
         classes.add(com.smartcampus.resource.DiscoveryResource.class);
         classes.add(com.smartcampus.resource.RoomResource.class);
         classes.add(com.smartcampus.resource.SensorResource.class);
+        classes.add(com.smartcampus.resource.TestResource.class);
 
         // Exception mappers
         classes.add(com.smartcampus.exception.mapper.GenericExceptionMapper.class);
