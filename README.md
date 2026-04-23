@@ -70,7 +70,7 @@ The `DataStore` is pre-populated with sample data for immediate testing:
    - Confirm the following settings:
      - **Server**: Apache Tomcat or TomEE
      - **Java EE Version**: Jakarta EE 8 Web
-     - **Context Path**: 
+     - **Context Path**: *(leave blank)*
      - **Relative URL**: `/api/v1`
 
 3. **Run the project**
