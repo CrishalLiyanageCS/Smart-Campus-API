@@ -67,13 +67,11 @@ The `DataStore` is pre-populated with sample data for immediate testing:
 
 2. **Configure Run settings**
    - Right-click the project → **Properties → Run**
-   - Confirm the following settings match the screenshot below:
+   - Confirm the following settings:
      - **Server**: Apache Tomcat or TomEE
      - **Java EE Version**: Jakarta EE 8 Web
      - **Context Path**: `/SmartCampusAPI`
      - **Relative URL**: `/api/v1`
-
-   > *Project Properties → Run: Context Path `/SmartCampusAPI`, Relative URL `/api/v1`*
 
 3. **Run the project**
    - Right-click the project → **Run** (or press **F6**)
@@ -102,14 +100,14 @@ The API will start at: **`http://localhost:8080/SmartCampusAPI/api/v1`**
 mvn clean package
 
 # 2. Copy the WAR to Tomcat webapps folder
-cp target/smartcampus.war /path/to/tomcat/webapps/
+cp target/smartcampus.war /path/to/tomcat/webapps/ROOT.war
 
 # 3. Start Tomcat
 /path/to/tomcat/bin/startup.sh    # Linux/Mac
 /path/to/tomcat/bin/startup.bat   # Windows
 ```
 
-The API will be available at: **`http://localhost:8080/smartcampus/api/v1`**
+The API will be available at: **`http://localhost:8080/SmartCampusAPI/api/v1`**
 
 ---
 
